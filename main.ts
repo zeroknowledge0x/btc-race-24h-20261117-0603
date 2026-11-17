@@ -37,8 +37,13 @@ const EXIT_ABOVE_BPS = 60;
 const ENTRY_BELOW_BPS = 80;
 /** Sell the whole position when it is this far under water, whatever the average says. */
 const STOP_BELOW_BPS = 150;
-/** Wide on purpose: the fill is the next bar's open, so a tight cap only loses trades. */
-const MAX_SLIPPAGE_BPS = 200;
+/**
+ * A trade is refused when it would fill this far past the latest close it was decided on. Wide, because
+ * the fill is the next bar's open and a refusal only loses the trade - but not unbounded, since a market
+ * order that would fill over 1% away from the close it was sized on is a gap this rule never intended to
+ * chase. Measured on the dev window: 0 of 6 fills refused at 100, the same net PnL as an unbounded cap.
+ */
+const MAX_SLIPPAGE_BPS = 100;
 const BPS = 10_000n;
 
 /** The closes seen so far, oldest first, at most SMA_BARS of them. */
