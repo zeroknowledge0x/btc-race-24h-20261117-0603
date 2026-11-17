@@ -13,14 +13,18 @@
 // is what makes it capture the drift of the window it races - and it swings around
 // that holding:
 //   - it sells the whole position when the close is at least EXIT_ABOVE_BPS above its
-//     SMA of SMA_BARS minutes (the window's stretched-up state, whose forward return is
+//     SMA of SMA_BARS minutes (the stretched-up state, whose forward return is
 //     negative), or when the position itself is STOP_BELOW_BPS under water;
 //   - it buys back the whole position when the close is at least ENTRY_BELOW_BPS below
 //     the same average, or on the first bar it can act on.
-// Measured on the dev window against the kit's own grader: net PnL +18.55 USDC against
-// buy-and-hold's +1.07, and the same rule is non-negative in every 6-hour block of that
-// window (buy-and-hold loses in three of the four) and holds up on the window mirrored
-// into a downtrend (-0.68 against buy-and-hold's -8.16).
+// The two thresholds and the length of the average were chosen on the dev window by a
+// grid over a local replay of the same protocol, screened so that every choice has to
+// hold up on BOTH 12-hour halves of the window, on each 6-hour block of it, and on the
+// window mirrored into a downtrend (see the table in README.md). Measured on the dev
+// window with the kit's own grader: net PnL +21.40 USDC against buy-and-hold's +1.07,
+// 8 trades, 0 rejected; every 6-hour block of the window is non-negative for this rule
+// where buy-and-hold loses in three of the four, and the mirrored window reads +5.37
+// against buy-and-hold's -8.16.
 //
 // Determinism: no clock, no randomness, no network, no files - every decision is a
 // function of the closes already seen, so two runs on the same bars send the same orders.
@@ -30,9 +34,9 @@ import type { OrderInput } from './vendor/makefun-bars.ts';
 
 const SYMBOL = 'CBBTC';
 /** Minutes in the moving average the close is compared against. */
-const SMA_BARS = 240;
+const SMA_BARS = 90;
 /** Sell the whole position when the close is this far above the average. */
-const EXIT_ABOVE_BPS = 60;
+const EXIT_ABOVE_BPS = 50;
 /** Buy the whole position back when the close is this far below the average. */
 const ENTRY_BELOW_BPS = 80;
 /** Sell the whole position when it is this far under water, whatever the average says. */
